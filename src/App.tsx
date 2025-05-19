@@ -20,6 +20,7 @@ import Profile from "./pages/Profile";
 import AnimalManagement from "./pages/admin/AnimalManagement";
 import BookingManagement from "./pages/admin/BookingManagement";
 import { CartProvider } from "./contexts/CartContext";
+import AdminRoute from "./components/Auth/AdminRoute";
 
 const queryClient = new QueryClient();
 
@@ -43,8 +44,19 @@ const App = () => (
               <Route path="/profile" element={<Profile />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
-              <Route path="/admin/animals" element={<AnimalManagement />} />
-              <Route path="/admin/bookings" element={<BookingManagement />} />
+              
+              {/* Admin routes protected by AdminRoute component */}
+              <Route path="/admin/animals" element={
+                <AdminRoute>
+                  <AnimalManagement />
+                </AdminRoute>
+              } />
+              <Route path="/admin/bookings" element={
+                <AdminRoute>
+                  <BookingManagement />
+                </AdminRoute>
+              } />
+              
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>

@@ -14,146 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
-
-// Mock booking data interface
-interface Booking {
-  id: string;
-  userId: string;
-  userName: string;
-  userEmail: string;
-  animalId: string;
-  animalName: string;
-  shares: number;
-  totalAmount: number;
-  status: "pending" | "confirmed" | "completed" | "cancelled";
-  bookingDate: string;
-  notes?: string;
-}
-
-// Mock bookings data
-const mockBookings: Booking[] = [
-  {
-    id: "booking1",
-    userId: "user1",
-    userName: "Ahmed Khan",
-    userEmail: "ahmed@example.com",
-    animalId: "1",
-    animalName: "Premium Cow",
-    shares: 2,
-    totalAmount: 12000,
-    status: "confirmed",
-    bookingDate: "2025-05-15T10:30:00Z",
-  },
-  {
-    id: "booking2",
-    userId: "user2",
-    userName: "Fatima Ali",
-    userEmail: "fatima@example.com",
-    animalId: "3",
-    animalName: "Medium Cow",
-    shares: 1,
-    totalAmount: 5000,
-    status: "pending",
-    bookingDate: "2025-05-18T14:45:00Z",
-  },
-  {
-    id: "booking3",
-    userId: "user3",
-    userName: "Mohammed Patel",
-    userEmail: "mohammed@example.com",
-    animalId: "2",
-    animalName: "Large Goat",
-    shares: 1,
-    totalAmount: 15000,
-    status: "completed",
-    bookingDate: "2025-05-10T09:15:00Z",
-    notes: "Customer requested special packaging"
-  },
-  {
-    id: "booking4",
-    userId: "user4",
-    userName: "Zahra Khan",
-    userEmail: "zahra@example.com",
-    animalId: "5",
-    animalName: "Large Cow",
-    shares: 3,
-    totalAmount: 21000,
-    status: "pending",
-    bookingDate: "2025-05-20T11:00:00Z",
-  },
-  {
-    id: "booking5",
-    userId: "user5",
-    userName: "Yasir Ahmed",
-    userEmail: "yasir@example.com",
-    animalId: "6",
-    animalName: "Standard Goat",
-    shares: 1,
-    totalAmount: 12000,
-    status: "cancelled",
-    bookingDate: "2025-05-05T16:30:00Z",
-    notes: "Customer cancelled due to travel plans"
-  },
-  {
-    id: "booking6",
-    userId: "user1",
-    userName: "Ahmed Khan",
-    userEmail: "ahmed@example.com",
-    animalId: "4",
-    animalName: "Premium Goat",
-    shares: 1,
-    totalAmount: 20000,
-    status: "confirmed",
-    bookingDate: "2025-05-16T13:20:00Z",
-  },
-  {
-    id: "booking7",
-    userId: "user6",
-    userName: "Aisha Rahman",
-    userEmail: "aisha@example.com",
-    animalId: "1",
-    animalName: "Premium Cow",
-    shares: 1,
-    totalAmount: 6000,
-    status: "pending",
-    bookingDate: "2025-05-19T09:45:00Z",
-  },
-];
-
-// Mock API functions
-const fetchBookings = async (page: number, pageSize: number, statusFilter?: string): Promise<{
-  bookings: Booking[];
-  totalItems: number;
-  totalPages: number;
-}> => {
-  // Filter by status if provided
-  let filteredBookings = mockBookings;
-  if (statusFilter && statusFilter !== "all") {
-    filteredBookings = mockBookings.filter(booking => booking.status === statusFilter);
-  }
-  
-  // Calculate pagination
-  const totalItems = filteredBookings.length;
-  const totalPages = Math.ceil(totalItems / pageSize);
-  const start = (page - 1) * pageSize;
-  const end = start + pageSize;
-  const paginatedBookings = filteredBookings.slice(start, end);
-  
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
-  return {
-    bookings: paginatedBookings,
-    totalItems,
-    totalPages
-  };
-};
-
-const updateBookingStatus = async (bookingId: string, status: string): Promise<void> => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-  // In a real app, this would update the status in the backend
-};
+import { bookingService } from "@/services/bookingService";
 
 const BookingManagement = () => {
   const [page, setPage] = useState(1);
@@ -162,12 +23,12 @@ const BookingManagement = () => {
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["bookings", page, statusFilter],
-    queryFn: () => fetchBookings(page, pageSize, statusFilter),
+    queryFn: () => bookingService.getBookings(page, pageSize, statusFilter),
   });
 
   const updateStatusMutation = useMutation({
     mutationFn: ({ bookingId, status }: { bookingId: string; status: string }) => 
-      updateBookingStatus(bookingId, status),
+      bookingService.updateBookingStatus(bookingId, status),
     onSuccess: () => {
       toast.success("Booking status updated successfully");
       refetch();

@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { 
   Card, 
   CardContent, 
@@ -34,7 +34,8 @@ const animalSchema = z.object({
   description: z.string().min(10, "Description must be at least 10 characters"),
 });
 
-type AnimalFormValues = z.infer<typeof animalSchema>;
+// Define a new type that matches exactly what animalService.addAnimal expects
+type AnimalFormValues = Required<Omit<Animal, 'id' | 'bookedShares' | 'remainingShares' | 'additionalImages' | 'features'>>;
 
 const AnimalManagement = () => {
   const [page, setPage] = useState(1);
@@ -45,17 +46,7 @@ const AnimalManagement = () => {
   // Fetch animals with pagination
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["animals", page],
-    queryFn: async () => {
-      const allAnimals = await animalService.getAllAnimals();
-      const totalPages = Math.ceil(allAnimals.length / pageSize);
-      
-      const paginatedAnimals = allAnimals.slice((page - 1) * pageSize, page * pageSize);
-      return {
-        animals: paginatedAnimals,
-        totalPages,
-        totalItems: allAnimals.length,
-      };
-    },
+    queryFn: () => animalService.getPaginatedAnimals(page, pageSize),
   });
 
   const form = useForm<AnimalFormValues>({
@@ -74,17 +65,49 @@ const AnimalManagement = () => {
     },
   });
 
-  const onSubmit = async (values: AnimalFormValues) => {
-    try {
-      debugger;
-      // In a real app, this would send data to the backend
-      toast.success(editingAnimal ? "Animal updated successfully" : "Animal added successfully");
+  const addAnimalMutation = useMutation({
+    mutationFn: (values: AnimalFormValues) => animalService.addAnimal(values),
+    onSuccess: () => {
+      toast.success("Animal added successfully");
       setIsDialogOpen(false);
       resetForm();
       refetch();
-    } catch (error) {
-      toast.error("Failed to save animal");
-      console.error("Save animal error:", error);
+    },
+    onError: () => {
+      toast.error("Failed to add animal");
+    },
+  });
+
+  const updateAnimalMutation = useMutation({
+    mutationFn: ({ id, values }: { id: string; values: Partial<Animal> }) => 
+      animalService.updateAnimal(id, values),
+    onSuccess: () => {
+      toast.success("Animal updated successfully");
+      setIsDialogOpen(false);
+      resetForm();
+      refetch();
+    },
+    onError: () => {
+      toast.error("Failed to update animal");
+    },
+  });
+
+  const deleteAnimalMutation = useMutation({
+    mutationFn: (id: string) => animalService.deleteAnimal(id),
+    onSuccess: () => {
+      toast.success("Animal deleted successfully");
+      refetch();
+    },
+    onError: () => {
+      toast.error("Failed to delete animal");
+    },
+  });
+
+  const onSubmit = async (values: AnimalFormValues) => {
+    if (editingAnimal) {
+      updateAnimalMutation.mutate({ id: editingAnimal.id, values });
+    } else {
+      addAnimalMutation.mutate(values);
     }
   };
 
@@ -107,14 +130,7 @@ const AnimalManagement = () => {
 
   const handleDeleteAnimal = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this animal?")) {
-      try {
-        // In a real app, this would delete from the backend
-        toast.success("Animal deleted successfully");
-        refetch();
-      } catch (error) {
-        toast.error("Failed to delete animal");
-        console.error("Delete animal error:", error);
-      }
+      deleteAnimalMutation.mutate(id);
     }
   };
 
@@ -281,8 +297,10 @@ const AnimalManagement = () => {
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit">
-                  {editingAnimal ? "Update Animal" : "Add Animal"}
+                <Button type="submit" disabled={addAnimalMutation.isPending || updateAnimalMutation.isPending}>
+                  {editingAnimal 
+                    ? updateAnimalMutation.isPending ? "Updating..." : "Update Animal" 
+                    : addAnimalMutation.isPending ? "Adding..." : "Add Animal"}
                 </Button>
               </DialogFooter>
             </form>

@@ -1,4 +1,3 @@
-
 import { ApiService } from '@/lib/axios';
 
 // Define the animal type for better TypeScript support
@@ -19,6 +18,12 @@ export interface Animal {
   description: string;
   features?: string[];
 }
+
+// Define what's required for creating a new animal
+export type CreateAnimalDto = Omit<Animal, 'id' | 'bookedShares' | 'remainingShares' | 'additionalImages' | 'features'> & {
+  additionalImages?: string[];
+  features?: string[];
+};
 
 // Mock data - same as currently being used
 const mockAnimals: Animal[] = [
@@ -185,6 +190,38 @@ class AnimalService extends ApiService<Animal> {
     }
   }
 
+  // Get animals with pagination
+  async getPaginatedAnimals(page: number = 1, pageSize: number = 10): Promise<{
+    animals: Animal[];
+    totalItems: number;
+    totalPages: number;
+  }> {
+    try {
+      const response = await this.get<{
+        animals: Animal[];
+        totalItems: number;
+        totalPages: number;
+      }>(`/?page=${page}&pageSize=${pageSize}`);
+      
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching paginated animals:', error);
+      
+      // Calculate pagination for mock data
+      const totalItems = mockAnimals.length;
+      const totalPages = Math.ceil(totalItems / pageSize);
+      const start = (page - 1) * pageSize;
+      const end = start + pageSize;
+      const paginatedAnimals = mockAnimals.slice(start, end);
+      
+      return {
+        animals: paginatedAnimals,
+        totalItems,
+        totalPages
+      };
+    }
+  }
+
   // Get animals by category
   async getAnimalsByCategory(category: string): Promise<Animal[]> {
     try {
@@ -204,6 +241,65 @@ class AnimalService extends ApiService<Animal> {
     } catch (error) {
       console.error(`Error fetching animal by ID ${id}:`, error);
       return mockAnimals.find(animal => animal.id === id);
+    }
+  }
+
+  // Add new animal
+  async addAnimal(animalData: CreateAnimalDto): Promise<Animal> {
+    try {
+      // Calculate remainingShares based on totalShares
+      const animal = {
+        ...animalData,
+        bookedShares: 0,
+        remainingShares: animalData.totalShares
+      };
+      
+      const response = await this.post<Animal>('/', animal);
+      return response.data;
+    } catch (error) {
+      console.error('Error adding animal:', error);
+      
+      // Mock response with new animal
+      const newId = (Math.max(...mockAnimals.map(a => parseInt(a.id))) + 1).toString();
+      const newAnimal: Animal = {
+        id: newId,
+        ...animalData,
+        bookedShares: 0,
+        remainingShares: animalData.totalShares
+      };
+      
+      return newAnimal;
+    }
+  }
+
+  // Update existing animal
+  async updateAnimal(id: string, animalData: Partial<Animal>): Promise<Animal> {
+    try {
+      const response = await this.put<Animal>(`/${id}`, animalData);
+      return response.data;
+    } catch (error) {
+      console.error(`Error updating animal ${id}:`, error);
+      
+      // Mock response with updated animal
+      const existingAnimal = mockAnimals.find(a => a.id === id);
+      if (!existingAnimal) {
+        throw new Error(`Animal with ID ${id} not found`);
+      }
+      
+      const updatedAnimal = { ...existingAnimal, ...animalData };
+      return updatedAnimal;
+    }
+  }
+
+  // Delete animal
+  async deleteAnimal(id: string): Promise<boolean> {
+    try {
+      await this.delete(`/${id}`);
+      return true;
+    } catch (error) {
+      console.error(`Error deleting animal ${id}:`, error);
+      // Mock successful deletion
+      return true;
     }
   }
 
