@@ -13,12 +13,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { animalService, Animal } from "@/services/animalService";
+import { animalService, Animal, CreateAnimalDto } from "@/services/animalService";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash } from "lucide-react";
+import { Plus, Pencil, Trash, Image, ImagePlus } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Schema for animal form
 const animalSchema = z.object({
@@ -41,6 +42,9 @@ const AnimalManagement = () => {
   const [page, setPage] = useState(1);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingAnimal, setEditingAnimal] = useState<Animal | null>(null);
+  const [selectedImageTab, setSelectedImageTab] = useState("url");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const pageSize = 5;
 
   // Fetch animals with pagination
@@ -66,7 +70,7 @@ const AnimalManagement = () => {
   });
 
   const addAnimalMutation = useMutation({
-    mutationFn: (values: AnimalFormValues) => animalService.addAnimal(values),
+    mutationFn: (values: CreateAnimalDto) => animalService.addAnimal(values),
     onSuccess: () => {
       toast.success("Animal added successfully");
       setIsDialogOpen(false);
@@ -103,11 +107,50 @@ const AnimalManagement = () => {
     },
   });
 
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      const file = event.target.files[0];
+      setImageFile(file);
+      
+      // Create preview URL
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
+      
+      // If we're in the file upload tab, update the form's imageUrl field
+      // with a placeholder that will be replaced on submission
+      if (selectedImageTab === "upload") {
+        form.setValue("imageUrl", "image-being-uploaded");
+      }
+    }
+  };
+
   const onSubmit = async (values: AnimalFormValues) => {
-    if (editingAnimal) {
-      updateAnimalMutation.mutate({ id: editingAnimal.id, values });
-    } else {
-      addAnimalMutation.mutate(values);
+    try {
+      let finalImageUrl = values.imageUrl;
+      
+      // If we're using file upload and have a file
+      if (selectedImageTab === "upload" && imageFile) {
+        // In a real application, you would upload the file to a server here
+        // and get back a URL. For now, we'll simulate it using the preview URL
+        finalImageUrl = imagePreview || values.imageUrl;
+        
+        // In production, this is where you'd make the API call to upload the image
+        console.log("Would upload file:", imageFile.name);
+      }
+      
+      const dataToSubmit = {
+        ...values,
+        imageUrl: finalImageUrl
+      };
+      
+      if (editingAnimal) {
+        updateAnimalMutation.mutate({ id: editingAnimal.id, values: dataToSubmit });
+      } else {
+        addAnimalMutation.mutate(dataToSubmit);
+      }
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      toast.error("Failed to process image upload");
     }
   };
 
@@ -125,6 +168,12 @@ const AnimalManagement = () => {
       imageUrl: animal.imageUrl,
       description: animal.description,
     });
+    
+    // Reset image state
+    setImageFile(null);
+    setImagePreview(animal.imageUrl);
+    setSelectedImageTab("url");
+    
     setIsDialogOpen(true);
   };
 
@@ -148,6 +197,9 @@ const AnimalManagement = () => {
       description: "",
     });
     setEditingAnimal(null);
+    setImageFile(null);
+    setImagePreview(null);
+    setSelectedImageTab("url");
   };
 
   const handleDialogOpenChange = (open: boolean) => {
@@ -273,11 +325,51 @@ const AnimalManagement = () => {
                 </div>
                 
                 <div className="space-y-2 sm:col-span-2">
-                  <Label htmlFor="imageUrl">Image URL</Label>
-                  <Input id="imageUrl" {...form.register("imageUrl")} />
-                  {form.formState.errors.imageUrl && (
-                    <p className="text-sm text-red-500">{form.formState.errors.imageUrl.message}</p>
-                  )}
+                  <Label>Animal Image</Label>
+                  <Tabs 
+                    defaultValue="url" 
+                    value={selectedImageTab}
+                    onValueChange={(value) => setSelectedImageTab(value)}
+                    className="w-full"
+                  >
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger value="url">Image URL</TabsTrigger>
+                      <TabsTrigger value="upload">Upload Image</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="url" className="space-y-2">
+                      <Input 
+                        id="imageUrl" 
+                        placeholder="https://example.com/image.jpg" 
+                        {...form.register("imageUrl")}
+                      />
+                      {form.formState.errors.imageUrl && (
+                        <p className="text-sm text-red-500">{form.formState.errors.imageUrl.message}</p>
+                      )}
+                    </TabsContent>
+                    <TabsContent value="upload" className="space-y-4">
+                      <div className="grid w-full max-w-sm items-center gap-1.5">
+                        <Label htmlFor="picture">Upload Image</Label>
+                        <Input
+                          id="picture"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageChange}
+                        />
+                      </div>
+                      {imagePreview && (
+                        <div className="mt-2">
+                          <p className="text-sm text-muted-foreground mb-1">Preview:</p>
+                          <div className="relative h-40 w-full overflow-hidden rounded-md">
+                            <img 
+                              src={imagePreview} 
+                              alt="Preview" 
+                              className="object-cover w-full h-full"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </TabsContent>
+                  </Tabs>
                 </div>
                 
                 <div className="space-y-2 sm:col-span-2">
@@ -326,6 +418,7 @@ const AnimalManagement = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead>Image</TableHead>
                       <TableHead>Name</TableHead>
                       <TableHead>Category</TableHead>
                       <TableHead>Price</TableHead>
@@ -337,6 +430,19 @@ const AnimalManagement = () => {
                   <TableBody>
                     {data?.animals.map((animal) => (
                       <TableRow key={animal.id}>
+                        <TableCell>
+                          <div className="h-10 w-10 overflow-hidden rounded">
+                            <img 
+                              src={animal.imageUrl} 
+                              alt={animal.name} 
+                              className="h-full w-full object-cover"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.src = "https://placehold.co/100x100?text=No+Image";
+                              }}
+                            />
+                          </div>
+                        </TableCell>
                         <TableCell className="font-medium">{animal.name}</TableCell>
                         <TableCell className="capitalize">{animal.category}</TableCell>
                         <TableCell>₹{animal.price.toLocaleString()}</TableCell>
