@@ -173,7 +173,7 @@ const AnimalDetail = () => {
           </div>
           
           <div className="flex items-baseline gap-2 mb-6">
-            <span className="text-2xl font-bold">₹{formatNumber(animal.pricePerShare)}</span>
+            <span className="text-2xl font-bold">PKR {formatNumber(animal.pricePerShare)}</span>
             <span className="text-sm text-muted-foreground">per share</span>
           </div>
           
@@ -209,7 +209,7 @@ const AnimalDetail = () => {
             </div>
             <div>
               <h3 className="text-sm text-muted-foreground">Total Price</h3>
-              <p className="font-medium">₹{formatNumber(animal.price)}</p>
+              <p className="font-medium">PKR {formatNumber(animal.price)}</p>
             </div>
           </div>
           
@@ -293,7 +293,7 @@ const AnimalDetail = () => {
                 <div className="pt-4 border-t">
                   <div className="flex justify-between mb-4">
                     <span className="font-medium">Total Amount:</span>
-                    <span className="text-lg font-bold">₹{formatNumber(totalPrice)}</span>
+                    <span className="text-lg font-bold">PKR {formatNumber(totalPrice)}</span>
                   </div>
                   
                   <div className="flex gap-2">
@@ -368,7 +368,7 @@ const AnimalDetail = () => {
               </div>
               <div>
                 <h4 className="font-medium">Price per Share</h4>
-                <p className="text-muted-foreground">₹{formatNumber(animal.pricePerShare)}</p>
+                <p className="text-muted-foreground">PKR {formatNumber(animal.pricePerShare)}</p>
               </div>
             </div>
           </TabsContent>

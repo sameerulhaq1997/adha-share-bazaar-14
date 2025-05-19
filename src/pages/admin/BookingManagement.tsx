@@ -114,7 +114,7 @@ const BookingManagement = () => {
                         </TableCell>
                         <TableCell>{booking.animalName}</TableCell>
                         <TableCell className="text-right">{booking.shares}</TableCell>
-                        <TableCell className="text-right">₹{booking.totalAmount.toLocaleString()}</TableCell>
+                        <TableCell className="text-right">PKR {booking.totalAmount.toLocaleString()}</TableCell>
                         <TableCell>{format(new Date(booking.bookingDate), "PPP")}</TableCell>
                         <TableCell>
                           <Badge className={getStatusBadgeColor(booking.status)}>

@@ -445,8 +445,8 @@ const AnimalManagement = () => {
                         </TableCell>
                         <TableCell className="font-medium">{animal.name}</TableCell>
                         <TableCell className="capitalize">{animal.category}</TableCell>
-                        <TableCell>₹{animal.price.toLocaleString()}</TableCell>
-                        <TableCell className="text-right">₹{animal.pricePerShare.toLocaleString()}</TableCell>
+                        <TableCell>PKR {animal.price.toLocaleString()}</TableCell>
+                        <TableCell className="text-right">PKR {animal.pricePerShare.toLocaleString()}</TableCell>
                         <TableCell className="text-right">{animal.remainingShares} / {animal.totalShares}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end space-x-2">

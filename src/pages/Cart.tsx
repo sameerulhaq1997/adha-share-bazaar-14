@@ -69,7 +69,7 @@ const Cart = () => {
                         </p>
                       </div>
                       <span className="text-brand-700 font-bold">
-                        ₹{item.totalPrice.toLocaleString()}
+                        PKR {item.totalPrice.toLocaleString()}
                       </span>
                     </div>
 
@@ -142,14 +142,14 @@ const Cart = () => {
                   <span>
                     {item.name} ({item.shares} {item.shares > 1 ? "shares" : "share"})
                   </span>
-                  <span>₹{item.totalPrice.toLocaleString()}</span>
+                  <span>PKR {item.totalPrice.toLocaleString()}</span>
                 </div>
               ))}
 
               <div className="border-t pt-4 mt-4">
                 <div className="flex justify-between font-medium">
                   <span>Total</span>
-                  <span className="text-lg">₹{getTotalPrice().toLocaleString()}</span>
+                  <span className="text-lg">PKR {getTotalPrice().toLocaleString()}</span>
                 </div>
               </div>
             </CardContent>

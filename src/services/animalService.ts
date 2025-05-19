@@ -182,9 +182,19 @@ class AnimalService extends ApiService<Animal> {
   // Get all animals
   async getAllAnimals(): Promise<Animal[]> {
     try {
-      debugger;
-      const response = await this.get<Animal[]>('/');
-      return response.data;
+      const response = await this.get<{
+        value: {
+          pageSize: number;
+          pageNumber: number;
+          totalCount: number;
+          totalPages: number;
+          data: Animal[];
+        };
+        isSuccess: boolean;
+        errors: any[];
+      }>('');
+      const { data, totalCount, totalPages } = response.data.value;
+      return data;
     } catch (error) {
       console.error('Error fetching animals:', error);
       return mockAnimals;
@@ -208,9 +218,7 @@ class AnimalService extends ApiService<Animal> {
         };
         isSuccess: boolean;
         errors: any[];
-        validationErrors: Record<string, string>;
-        successes: string[];
-      }>(`/?page=${page}&pageSize=${pageSize}`);
+      }>(`?page=${page}&pageSize=${pageSize}`);
       debugger;
       const { data, totalCount, totalPages } = response.data.value;
       return {
@@ -236,53 +244,28 @@ class AnimalService extends ApiService<Animal> {
     }
   }
 
-  // Get animals by category
-  async getAnimalsByCategory(category: string): Promise<Animal[]> {
-    try {
-      const response = await this.get<Animal[]>(`/?category=${category}`);
-      return response.data;
-    } catch (error) {
-      console.error(`Error fetching animals by category ${category}:`, error);
-      return mockAnimals.filter(animal => animal.category === category);
-    }
-  }
 
   // Get animal by ID
   async getAnimalById(id: string): Promise<Animal | undefined> {
     try {
-      const response = await this.get<Animal>(`/${id}`);
-      return response.data;
+      const response = await this.get<{value: Animal; isSuccess: boolean;}>(`/${id}`);
+      return response.data.value;
     } catch (error) {
       console.error(`Error fetching animal by ID ${id}:`, error);
       return mockAnimals.find(animal => animal.id === id);
     }
   }
 
-  // Add new animal
   async addAnimal(animalData: CreateAnimalDto): Promise<Animal> {
     try {
-      // Calculate remainingShares based on totalShares
       const animal = {
         ...animalData,
         bookedShares: 0,
         remainingShares: animalData.totalShares
       };
-      
       const response = await this.post<Animal>('/', animal);
       return response.data;
     } catch (error) {
-      console.error('Error adding animal:', error);
-      
-      // Mock response with new animal
-      const newId = (Math.max(...mockAnimals.map(a => parseInt(a.id))) + 1).toString();
-      const newAnimal: Animal = {
-        id: newId,
-        ...animalData,
-        bookedShares: 0,
-        remainingShares: animalData.totalShares
-      };
-      
-      return newAnimal;
     }
   }
 
@@ -308,6 +291,7 @@ class AnimalService extends ApiService<Animal> {
   // Delete animal
   async deleteAnimal(id: string): Promise<boolean> {
     try {
+      debugger;
       await this.delete(`/${id}`);
       return true;
     } catch (error) {

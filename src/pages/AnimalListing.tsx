@@ -270,6 +270,7 @@ const AnimalListing = () => {
 };
 
 const AnimalGrid = ({ animals, loading }: { animals: Animal[], loading: boolean }) => {
+  debugger;
   if (loading) {
     return (
       <div className="text-center py-12">
@@ -292,11 +293,11 @@ const AnimalGrid = ({ animals, loading }: { animals: Animal[], loading: boolean 
       {animals.map((animal) => (
         <Card key={animal.id} className="overflow-hidden border-brand-200 hover:shadow-md transition-shadow">
           <div className="aspect-video relative">
-            <img
-              src={animal.imageUrl}
-              alt={animal.name}
-              className="w-full h-full object-cover"
-            />
+           <img
+  src={animal.imageUrl && animal.imageUrl !== "" ? animal.imageUrl : "/lovable-uploads/cow.jpeg"}
+  alt={animal.name}
+  className="w-full h-full object-cover"
+/>
             <div className="absolute top-2 right-2 bg-brand-600 text-white px-2 py-1 rounded text-sm font-medium">
               {animal.category === "cow" ? "7 Shares" : "Full Animal"}
             </div>
@@ -305,7 +306,7 @@ const AnimalGrid = ({ animals, loading }: { animals: Animal[], loading: boolean 
           <CardContent className="p-6">
             <div className="flex justify-between items-start mb-2">
               <h3 className="text-xl font-semibold">{animal.name}</h3>
-              <span className="text-brand-700 font-bold">₹{animal.price ? animal.price.toLocaleString() : '0'}</span>
+              <span className="text-brand-700 font-bold">PKR {animal.price ? animal.price.toLocaleString() : '0'}</span>
             </div>
             <p className="text-sm text-muted-foreground mb-4">{animal.description}</p>
             

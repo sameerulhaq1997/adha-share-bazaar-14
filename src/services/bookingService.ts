@@ -111,7 +111,7 @@ class BookingService extends ApiService<Booking> {
   private static instance: BookingService;
 
   private constructor() {
-    super('https://localhost:7026/bookings', mockBookings);
+    super('https://localhost:7026/v1/UserBooking', mockBookings);
   }
 
   // Singleton pattern
@@ -135,13 +135,23 @@ class BookingService extends ApiService<Booking> {
       }
       
       const response = await this.get<{
-        bookings: Booking[];
-        totalItems: number;
-        totalPages: number;
+        value: {
+                 pageSize: number;
+                 pageNumber: number;
+                 totalCount: number;
+                 totalPages: number;
+                 data: Booking[];
+               };
+               isSuccess: boolean;
+               errors: any[];
       }>(endpoint);
       
-      return response.data;
-    } catch (error) {
+const { data, totalCount, totalPages } = response.data.value;
+      return {
+        bookings: data,
+        totalItems: totalCount,
+        totalPages: totalPages
+      };    } catch (error) {
       console.error('Error fetching bookings:', error);
       
       // Filter mock data based on status
