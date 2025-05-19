@@ -76,6 +76,7 @@ const AnimalManagement = () => {
 
   const onSubmit = async (values: AnimalFormValues) => {
     try {
+      debugger;
       // In a real app, this would send data to the backend
       toast.success(editingAnimal ? "Animal updated successfully" : "Animal added successfully");
       setIsDialogOpen(false);

@@ -87,7 +87,7 @@ const Home = () => {
       {/* Hero Section with better banner */}
       <section className="relative py-20 bg-no-repeat bg-cover bg-center" 
                style={{ 
-                 backgroundImage: "linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1466721591366-2d5fba72006d?auto=format&fit=crop&q=80')",
+                 backgroundImage: "linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/lovable-uploads/banner.jpg')",
                  minHeight: "600px"
                }}>
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-transparent z-0"></div>
@@ -110,7 +110,7 @@ const Home = () => {
                 <Link to="/animals">Browse Animals</Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white/20">
-                <Link to="/register">Create Account</Link>
+                <Link style={{color:"green"}} to="/register">Create Account</Link>
               </Button>
             </div>
           </motion.div>
@@ -187,12 +187,12 @@ const Home = () => {
             {features.map((feature, index) => (
               <motion.div key={index} variants={fadeIn}>
                 <Card className="border-brand-200 hover:border-brand-400 transition-colors overflow-hidden h-full">
-                  <div className="h-48 overflow-hidden">
-                    <img 
+                  <div className="overflow-hidden">
+                    {/* <img 
                       src={feature.image} 
                       alt={feature.title}
                       className="w-full h-full object-cover transition-transform hover:scale-105 duration-500"
-                    />
+                    /> */}
                   </div>
                   <CardContent className="pt-6">
                     <div className="mb-4">{feature.icon}</div>
@@ -207,10 +207,7 @@ const Home = () => {
       </section>
 
       {/* CTA with background image */}
-      <section className="py-16 bg-no-repeat bg-cover bg-center relative" 
-               style={{ 
-                 backgroundImage: "linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1493962853295-0fd70327578a?auto=format&fit=crop&q=80')",
-               }}>
+      <section className="py-16 bg-brand-600 text-white">
         <motion.div 
           className="container px-4 sm:px-8 text-center relative z-10"
           initial={{ opacity: 0, y: 20 }}
@@ -227,7 +224,7 @@ const Home = () => {
             whileTap={{ scale: 0.95 }}
           >
             <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-brand-600">
-              <Link to="/animals">Browse Available Animals</Link>
+              <Link style={{color:"green"}} to="/animals">Browse Available Animals</Link>
             </Button>
           </motion.div>
         </motion.div>
