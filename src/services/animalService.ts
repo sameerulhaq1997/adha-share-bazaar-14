@@ -168,7 +168,7 @@ class AnimalService extends ApiService<Animal> {
 
   private constructor() {
     // Pass mockAnimals as fallback data
-    super('https://api.example.com/animals', mockAnimals);
+    super('https://localhost:7026/v1/Animal', mockAnimals);
   }
 
   // Singleton pattern to ensure only one instance is created
@@ -182,6 +182,7 @@ class AnimalService extends ApiService<Animal> {
   // Get all animals
   async getAllAnimals(): Promise<Animal[]> {
     try {
+      debugger;
       const response = await this.get<Animal[]>('/');
       return response.data;
     } catch (error) {
@@ -198,13 +199,26 @@ class AnimalService extends ApiService<Animal> {
   }> {
     try {
       const response = await this.get<{
-        animals: Animal[];
-        totalItems: number;
-        totalPages: number;
+        value: {
+          pageSize: number;
+          pageNumber: number;
+          totalCount: number;
+          totalPages: number;
+          data: Animal[];
+        };
+        isSuccess: boolean;
+        errors: any[];
+        validationErrors: Record<string, string>;
+        successes: string[];
       }>(`/?page=${page}&pageSize=${pageSize}`);
-      
-      return response.data;
-    } catch (error) {
+      debugger;
+      const { data, totalCount, totalPages } = response.data.value;
+      return {
+        animals: data,
+        totalItems: totalCount,
+        totalPages: totalPages
+      };
+   } catch (error) {
       console.error('Error fetching paginated animals:', error);
       
       // Calculate pagination for mock data

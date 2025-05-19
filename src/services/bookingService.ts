@@ -111,7 +111,7 @@ class BookingService extends ApiService<Booking> {
   private static instance: BookingService;
 
   private constructor() {
-    super('https://api.example.com/bookings', mockBookings);
+    super('https://localhost:7026/bookings', mockBookings);
   }
 
   // Singleton pattern

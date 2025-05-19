@@ -64,7 +64,7 @@ class UserService extends ApiService {
   private currentUser: User | null = null;
 
   private constructor() {
-    super('https://api.example.com/users');
+    super('https://localhost:7026/api/User');
   }
 
   // Singleton pattern
@@ -144,9 +144,11 @@ class UserService extends ApiService {
     }
 
     try {
-      const response = await this.get<User>('/me');
-      this.currentUser = response.data;
-      return this.currentUser;
+            this.currentUser = mockUser;
+
+      // const response = await this.get<User>('/me');
+      // this.currentUser = response.data;
+      // return this.currentUser;
     } catch (error) {
       console.error('Error fetching current user:', error);
       // Use mock data

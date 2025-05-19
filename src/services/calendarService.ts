@@ -34,7 +34,7 @@ class CalendarService extends ApiService<CalendarEvent> {
 
   private constructor() {
     // Pass mockAnimals as fallback data
-    super('https://api.example.com/calendar', [...mockSlaughterEvents, ...mockCollectionEvents]);
+    super('https://localhost:7026/calendar', [...mockSlaughterEvents, ...mockCollectionEvents]);
   }
 
   // Singleton pattern to ensure only one instance is created

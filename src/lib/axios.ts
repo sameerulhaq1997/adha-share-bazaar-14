@@ -2,7 +2,7 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 
 // Default base URL - you should replace this with your actual API endpoint
-const BASE_URL = 'https://api.example.com';
+const BASE_URL = 'https://localhost:7026';
 
 // Create a generic API service class
 export class ApiService<T = any> {
@@ -26,6 +26,7 @@ export class ApiService<T = any> {
         if (token) {
           config.headers['Authorization'] = `Bearer ${token}`;
         }
+        config.headers['X-Tenant-ID'] = `tenant1`;
         return config;
       },
       (error) => {
