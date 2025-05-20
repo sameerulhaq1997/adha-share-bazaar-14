@@ -5,7 +5,7 @@ type CartItem = {
   id: string;
   animalId: string;
   name: string;
-  category: string;
+  category?: string; // Make category optional to handle cases where it might be missing
   imageUrl: string;
   sharePrice: number;
   shares: number;

@@ -1,25 +1,43 @@
+
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Info, Check, ShoppingCart, AlertTriangle } from "lucide-react";
+import { Info, Check, ShoppingCart, AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "@/hooks/use-toast";
 import { animalService, Animal } from "@/services/animalService";
+import { userService, User } from "@/services/userService";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const AnimalDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { addToCart, items } = useCart();
+  const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState(0);
   const [shareCount, setShareCount] = useState(1);
   const [paymentMethod, setPaymentMethod] = useState("online");
   const [addingToCart, setAddingToCart] = useState(false);
   const [loading, setLoading] = useState(true);
   const [animal, setAnimal] = useState<Animal | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
+  // Check if user is authenticated
+  useEffect(() => {
+    const checkAuth = async () => {
+      const auth = userService.checkAuth();
+      setIsAuthenticated(auth);
+    };
+    
+    checkAuth();
+  }, []);
   
   // Fetch the animal details based on ID
   useEffect(() => {
@@ -31,7 +49,7 @@ const AnimalDetail = () => {
         const data = await animalService.getAnimalById(id);
         if (data) {
           setAnimal(data);
-          console.log("Animal data received:", data); // Debug log
+          console.log("Animal data received:", data);
         } else {
           console.error("No animal data returned for ID:", id);
         }
@@ -49,6 +67,37 @@ const AnimalDetail = () => {
     
     fetchAnimal();
   }, [id]);
+  
+  // Fetch users who booked this animal
+  useEffect(() => {
+    const fetchUsers = async () => {
+      if (!id) return;
+      
+      setLoadingUsers(true);
+      try {
+        const data = await userService.getUsersByAnimalId(id);
+        setUsers(data);
+        console.log("Users who booked this animal:", data);
+      } catch (error) {
+        console.error("Failed to fetch users:", error);
+      } finally {
+        setLoadingUsers(false);
+      }
+    };
+    
+    fetchUsers();
+  }, [id]);
+  
+  // Handle image navigation
+  const nextImage = () => {
+    if (!animal?.additionalImages) return;
+    setSelectedImage(prev => (prev + 1) % animal.additionalImages.length);
+  };
+  
+  const prevImage = () => {
+    if (!animal?.additionalImages) return;
+    setSelectedImage(prev => (prev - 1 + animal.additionalImages.length) % animal.additionalImages.length);
+  };
   
   if (loading) {
     return (
@@ -80,6 +129,16 @@ const AnimalDetail = () => {
   };
 
   const handleAddToCart = () => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Authentication required",
+        description: "Please login or register to book shares.",
+        variant: "destructive",
+      });
+      navigate("/login");
+      return;
+    }
+    
     setAddingToCart(true);
     
     // Add item to cart
@@ -121,25 +180,57 @@ const AnimalDetail = () => {
     return num.toLocaleString();
   };
 
+  // Get all images (main + additional)
+  const allImages = animal.additionalImages ? 
+    [animal.imageUrl, ...animal.additionalImages] : 
+    [animal.imageUrl];
+  
+  // Get current image to display
+  const currentImage = allImages[selectedImage];
+
   return (
     <div className="container px-4 sm:px-8 py-8">
       <div className="flex flex-col md:flex-row gap-8">
         {/* Left Column - Images */}
         <div className="w-full md:w-1/2">
-          <div className="rounded-lg overflow-hidden mb-4 border">
+          <div className="rounded-lg overflow-hidden mb-4 border relative">
             <img
-              src={animal.additionalImages ? animal.additionalImages[selectedImage] : animal.imageUrl}
+              src={currentImage}
               alt={animal.name}
               className="w-full h-auto object-cover aspect-video"
             />
+            
+            {allImages.length > 1 && (
+              <>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white rounded-full"
+                  onClick={prevImage}
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white rounded-full"
+                  onClick={nextImage}
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </Button>
+                <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-black/30 px-2 py-1 rounded text-white text-xs">
+                  {selectedImage + 1} / {allImages.length}
+                </div>
+              </>
+            )}
           </div>
           
-          {animal.additionalImages && animal.additionalImages.length > 0 && (
-            <div className="flex space-x-2">
-              {animal.additionalImages.map((image, index) => (
+          {allImages.length > 1 && (
+            <div className="flex space-x-2 overflow-x-auto pb-2">
+              {allImages.map((image, index) => (
                 <div
                   key={index}
-                  className={`border overflow-hidden rounded cursor-pointer w-20 h-20 ${
+                  className={`border overflow-hidden rounded cursor-pointer w-20 h-20 flex-shrink-0 ${
                     selectedImage === index ? "ring-2 ring-brand-500" : ""
                   }`}
                   onClick={() => setSelectedImage(index)}
@@ -184,7 +275,7 @@ const AnimalDetail = () => {
                 {animal.bookedShares}/{animal.totalShares} shares booked
               </span>
             </div>
-            <div className="progress-bar bg-muted">
+            <div className="progress-bar bg-muted h-2 rounded-full overflow-hidden">
               <div 
                 className="h-full bg-brand-500"
                 style={{ 
@@ -333,6 +424,7 @@ const AnimalDetail = () => {
           <TabsList className="w-full mb-6">
             <TabsTrigger value="description" className="flex-1">Description</TabsTrigger>
             <TabsTrigger value="details" className="flex-1">Specifications</TabsTrigger>
+            <TabsTrigger value="bookings" className="flex-1">Bookings</TabsTrigger>
             <TabsTrigger value="care" className="flex-1">Care & Handling</TabsTrigger>
           </TabsList>
           <TabsContent value="description" className="p-6 bg-secondary rounded-lg">
@@ -371,6 +463,60 @@ const AnimalDetail = () => {
                 <p className="text-muted-foreground">PKR {formatNumber(animal.pricePerShare)}</p>
               </div>
             </div>
+          </TabsContent>
+          <TabsContent value="bookings" className="p-6 bg-secondary rounded-lg">
+            <h3 className="text-xl font-semibold mb-4">Current Bookings</h3>
+            {loadingUsers ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
+                <p className="mt-2">Loading booking information...</p>
+              </div>
+            ) : users.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>User</TableHead>
+                    <TableHead>Shares</TableHead>
+                    <TableHead>Booking Date</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {users.map((user) => (
+                    user.bookedShares?.filter(booking => booking.animalId === id).map(booking => (
+                      <TableRow key={booking.id}>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            <Avatar className="h-8 w-8">
+                              <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="font-medium">{user.name}</p>
+                              <p className="text-xs text-muted-foreground">{user.email}</p>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>{booking.shares}</TableCell>
+                        <TableCell>{new Date(booking.bookingDate).toLocaleDateString()}</TableCell>
+                        <TableCell>
+                          <span className={`px-2 py-1 text-xs rounded-full ${
+                            booking.status === 'confirmed' ? 'bg-green-100 text-green-800' : 
+                            booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                            'bg-blue-100 text-blue-800'
+                          }`}>
+                            {capitalize(booking.status)}
+                          </span>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <div className="text-center py-8 bg-muted/50 rounded-lg">
+                <p className="text-muted-foreground">No bookings have been made for this animal yet.</p>
+              </div>
+            )}
           </TabsContent>
           <TabsContent value="care" className="p-6 bg-secondary rounded-lg">
             <h3 className="text-xl font-semibold mb-4">Care & Handling</h3>

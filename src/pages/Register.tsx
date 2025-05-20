@@ -1,21 +1,31 @@
 
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
+import { userService } from "@/services/userService";
 
 const Register = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [phone, setPhone] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
+
+  // Check if already logged in
+  useEffect(() => {
+    if (userService.checkAuth()) {
+      navigate("/dashboard");
+    }
+  }, [navigate]);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,15 +50,30 @@ const Register = () => {
     
     setIsLoading(true);
 
-    // This will be replaced with actual Supabase authentication
-    setTimeout(() => {
+    try {
+      const user = await userService.register({
+        name,
+        email,
+        password,
+        phone
+      });
+
       toast({
-        title: "Registration functionality not implemented yet",
-        description: "Please connect Supabase to enable authentication.",
+        title: "Registration successful!",
+        description: `Welcome to Qurbani Connect, ${user.name}!`,
+      });
+      
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Registration error:", error);
+      toast({
+        title: "Registration failed",
+        description: "There was a problem creating your account. Please try again.",
         variant: "destructive",
       });
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -83,6 +108,17 @@ const Register = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                className="bg-background text-foreground"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="phone" className="text-foreground">Phone Number (optional)</Label>
+              <Input
+                id="phone"
+                type="tel"
+                placeholder="+1 (555) 000-0000"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
                 className="bg-background text-foreground"
               />
             </div>

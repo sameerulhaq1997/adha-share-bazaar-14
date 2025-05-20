@@ -14,16 +14,18 @@ const Cart = () => {
   const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   const handleCheckout = () => {
-    // In a real application, this would navigate to a checkout page
-    // or integrate with a payment gateway
     setIsCheckingOut(true);
+    // Redirect to order page instead of showing a toast
     setTimeout(() => {
-      toast({
-        title: "Checkout functionality not implemented yet",
-        description: "Please connect Supabase to enable checkout.",
-      });
+      navigate("/order");
       setIsCheckingOut(false);
-    }, 1500);
+    }, 500);
+  };
+
+  // Helper function to safely capitalize category
+  const formatCategory = (category?: string) => {
+    if (!category) return "Unknown";
+    return category.charAt(0).toUpperCase() + category.slice(1);
   };
 
   if (items.length === 0) {
@@ -65,7 +67,7 @@ const Cart = () => {
                       <div>
                         <h3 className="text-xl font-semibold">{item.name}</h3>
                         <p className="text-sm text-muted-foreground mb-2">
-                          {item.category.charAt(0).toUpperCase() + item.category.slice(1)}
+                          {formatCategory(item.category)}
                         </p>
                       </div>
                       <span className="text-brand-700 font-bold">

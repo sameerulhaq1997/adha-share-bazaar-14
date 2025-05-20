@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,13 @@ const Login = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  // Check if already logged in
+  useEffect(() => {
+    if (userService.checkAuth()) {
+      navigate("/dashboard");
+    }
+  }, [navigate]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
@@ -29,10 +36,10 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      await userService.login({ email, password });
+      const user = await userService.login({ email, password });
       toast({
         title: "Success",
-        description: "You have successfully logged in",
+        description: `Welcome back, ${user.name}!`,
       });
       navigate("/dashboard");
     } catch (error) {
@@ -104,7 +111,8 @@ const Login = () => {
           <div className="mt-6 pt-6 border-t border-border">
             <p className="text-sm text-muted-foreground mb-4 text-center">For testing purposes:</p>
             <div className="text-xs text-muted-foreground bg-secondary p-3 rounded-md">
-              <p>Email: john@example.com</p>
+              <p>Admin Email: admin@example.com</p>
+              <p>Regular Email: john@example.com</p>
               <p>Password: password123</p>
               <p className="mt-2">
                 (Any email/password combination will work with the mock API service)
