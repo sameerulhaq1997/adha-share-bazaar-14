@@ -40,7 +40,7 @@ const updateProfile = async (data: ProfileFormValues): Promise<User> => {
     setTimeout(() => {
       resolve({
         id: '1',
-        name: data.name,
+        fullName: data.name,
         email: data.email,
         phone: data.phone,
       });
@@ -71,7 +71,7 @@ const ProfilePage = () => {
   const profileForm = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      name: user?.name || "",
+      name: user?.fullName || "",
       email: user?.email || "",
       phone: user?.phone || "",
     },
@@ -113,7 +113,7 @@ const ProfilePage = () => {
   // Update user values when user data is loaded
   if (user && !profileForm.formState.isDirty) {
     profileForm.reset({
-      name: user.name,
+      name: user.fullName,
       email: user.email,
       phone: user.phone || "",
     });

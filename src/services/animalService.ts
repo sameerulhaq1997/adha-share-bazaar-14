@@ -208,6 +208,12 @@ class AnimalService extends ApiService<Animal> {
     totalPages: number;
   }> {
     try {
+      let config: any = {};
+      config.headers = {
+        ...(config.headers || {}),
+        'X-Page-Number': page,
+        'X-Page-Size': pageSize,
+      };
       const response = await this.get<{
         value: {
           pageSize: number;
@@ -218,8 +224,14 @@ class AnimalService extends ApiService<Animal> {
         };
         isSuccess: boolean;
         errors: any[];
-      }>(`?page=${page}&pageSize=${pageSize}`);
+      }>("", null, config);
+
+      
+
       debugger;
+
+
+
       const { data, totalCount, totalPages } = response.data.value;
       return {
         animals: data,
@@ -291,7 +303,7 @@ class AnimalService extends ApiService<Animal> {
   // Delete animal
   async deleteAnimal(id: string): Promise<boolean> {
     try {
-      debugger;
+      ;
       await this.delete(`/${id}`);
       return true;
     } catch (error) {

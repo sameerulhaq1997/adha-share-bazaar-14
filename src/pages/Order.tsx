@@ -10,21 +10,22 @@ import { useCart } from "@/contexts/CartContext";
 import { toast } from "@/hooks/use-toast";
 import { userService } from "@/services/userService";
 import axios from "axios";
+import { bookingService } from "@/services/bookingService";
 
 const Order = () => {
   const navigate = useNavigate();
   const { items, getTotalPrice, clearCart } = useCart();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [user, setUser] = useState<{
-    name: string;
+    fullName: string;
     email: string;
     phone: string;
     address: string;
     notes: string;
   }>({
-    name: "",
-    email: "",
-    phone: "",
+    fullName: localStorage.getItem("userName"),
+    email: localStorage.getItem("userEmail"),
+    phone: localStorage.getItem("userPhone"),
     address: "",
     notes: ""
   });
@@ -37,7 +38,7 @@ const Order = () => {
         if (userData) {
           setUser(prevUser => ({
             ...prevUser,
-            name: userData.name || "",
+            name: userData.fullName || "",
             email: userData.email || "",
             phone: userData.phone || ""
           }));
@@ -66,7 +67,7 @@ const Order = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!user.name || !user.email || !user.phone || !user.address) {
+    if (!user.fullName || !user.email || !user.phone || !user.address) {
       toast({
         title: "Missing information",
         description: "Please fill in all required fields",
@@ -81,24 +82,19 @@ const Order = () => {
       // Prepare order data
       const orderData = {
         user: {
-          name: user.name,
+          fullName: user.fullName,
           email: user.email,
           phone: user.phone,
           address: user.address
         },
-        notes: user.notes,
-        items: items.map(item => ({
+        bookings: items.map(item => ({
           animalId: item.animalId,
           animalName: item.name,
-          shares: item.shares,
-          price: item.totalPrice
+          shares: item.shares
         })),
-        totalAmount: getTotalPrice(),
-        date: new Date().toISOString()
       };
-      
       // Make API call to submit order
-      await axios.post("https://api.example.com/orders", orderData);
+      await bookingService.AddBooking(orderData);
       
       // Clear cart and show success message
       clearCart();
@@ -110,16 +106,16 @@ const Order = () => {
       
       navigate("/dashboard");
     } catch (error) {
-      console.error("Order submission failed:", error);
+      // console.error("Order submission failed:", error);
       
-      // For demo purposes, we'll simulate a successful order even if API fails
-      toast({
-        title: "Order submitted successfully",
-        description: "Your order has been placed. You will receive a confirmation shortly.",
-      });
+      // // For demo purposes, we'll simulate a successful order even if API fails
+      // toast({
+      //   title: "Order submitted successfully",
+      //   description: "Your order has been placed. You will receive a confirmation shortly.",
+      // });
       
-      clearCart();
-      navigate("/dashboard");
+      // clearCart();
+      // navigate("/dashboard");
     } finally {
       setIsSubmitting(false);
     }
@@ -140,23 +136,11 @@ const Order = () => {
                 <div className="space-y-2">
                   <Label htmlFor="name">Full Name *</Label>
                   <Input
-                    id="name"
-                    name="name"
-                    value={user.name}
+                    id="fullName"
+                    name="fullName"
+                    value={user.fullName}
                     onChange={handleChange}
                     placeholder="Enter your full name"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email Address *</Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    value={user.email}
-                    onChange={handleChange}
-                    placeholder="Enter your email address"
                     required
                   />
                 </div>

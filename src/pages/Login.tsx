@@ -39,7 +39,7 @@ const Login = () => {
       const user = await userService.login({ email, password });
       toast({
         title: "Success",
-        description: `Welcome back, ${user.name}!`,
+        description: `Welcome back, ${user.fullName}!`,
       });
       navigate("/dashboard");
     } catch (error) {

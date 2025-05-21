@@ -1,5 +1,6 @@
 
 import { ApiService } from '@/lib/axios';
+import { User, UserBooking } from './userService';
 
 // Booking interface
 export interface Booking {
@@ -129,10 +130,14 @@ class BookingService extends ApiService<Booking> {
     totalPages: number;
   }> {
     try {
-      let endpoint = `/?page=${page}&pageSize=${pageSize}`;
-      if (status && status !== 'all') {
-        endpoint += `&status=${status}`;
-      }
+            const userId = localStorage.getItem('userId');
+      let config: any = {};
+      config.headers = {
+        ...(config.headers || {}),
+        'X-Page-Number': page,
+        'X-Page-Size': pageSize,
+      };
+
       
       const response = await this.get<{
         value: {
@@ -144,7 +149,7 @@ class BookingService extends ApiService<Booking> {
                };
                isSuccess: boolean;
                errors: any[];
-      }>(endpoint);
+      }>('', {"UserId": userId, "Status": status}, config);
       
 const { data, totalCount, totalPages } = response.data.value;
       return {
@@ -178,7 +183,7 @@ const { data, totalCount, totalPages } = response.data.value;
   // Update booking status
   async updateBookingStatus(bookingId: string, status: string): Promise<boolean> {
     try {
-      await this.put(`/${bookingId}/status`, { status });
+      await this.put(`change-status/${bookingId}?status=${status}`, { status });
       return true;
     } catch (error) {
       console.error(`Error updating booking status for booking ${bookingId}:`, error);
@@ -197,6 +202,48 @@ const { data, totalCount, totalPages } = response.data.value;
       return mockBookings.find(booking => booking.id === id);
     }
   }
+ checkAuth(): boolean {
+    const token = localStorage.getItem('authToken');
+    return !!token;
+  }
+
+    async getUserBookings(): Promise<UserBooking[]> {
+      debugger;
+      if (!this.checkAuth()) {
+        return [];
+      }
+  
+      try {
+            const userId = localStorage.getItem('userId');
+
+        const response = await this.get<{
+        value: {
+                 pageSize: number;
+                 pageNumber: number;
+                 totalCount: number;
+                 totalPages: number;
+                 data: UserBooking[];
+               };
+               isSuccess: boolean;
+               errors: any[];
+      }>('', {"UserId": userId});
+        return response.data.value.data;
+      } catch (error) {
+      }
+    }
+
+
+      async AddBooking(data: any): Promise<User> {
+        try {
+          const response = await this.post<{  value: User; }>('/add-bookings', data);
+          let user = response.data.value;
+          localStorage.setItem('authToken', user.token);
+          localStorage.setItem('userName', user.fullName);
+          
+          return user;
+        } catch (error) {
+        }
+      }
 }
 
 export const bookingService = BookingService.getInstance();

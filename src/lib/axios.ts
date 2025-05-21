@@ -59,8 +59,15 @@ export class ApiService<T = any> {
   }
 
   // Generic GET method
-  async get<R = T>(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<R>> {
+  async get<R = T>(url: string, searchQuery?: any, config?: AxiosRequestConfig): Promise<AxiosResponse<R>> {
     try {
+      if (searchQuery) {
+        config = config || {};
+        config.headers = {
+          ...(config.headers || {}),
+          'X-Search-Query': JSON.stringify(searchQuery),
+        };
+      }
       return await this.api.get<R>(url, config);
     } catch (error) {
       if (this.mockData) {

@@ -72,7 +72,7 @@ const Navbar = () => {
     <header className="sticky top-0 z-50 w-full border-b bg-background">
       <div className="container flex h-16 items-center px-4 sm:px-8">
         <Link to="/" className="flex items-center gap-2">
-          <img src="/lovable-uploads/400574e6-7b15-4fa2-a10f-85b42c0b8051.png" alt="Qurbani Connect Logo" className="h-10 w-auto" />
+          <img src="/lovable-uploads/logo.png" alt="Qurbani Connect Logo" className="h-10 w-auto" />
           <span className="font-bold text-xl text-brand-600">Qurbani Connect</span>
         </Link>
         
@@ -83,9 +83,9 @@ const Navbar = () => {
           <Link to="/animals" className="text-sm font-medium hover:text-brand-600 transition-colors">
             Animals
           </Link>
-          <Link to="/calendar" className="text-sm font-medium hover:text-brand-600 transition-colors">
+          {/* <Link to="/calendar" className="text-sm font-medium hover:text-brand-600 transition-colors">
             Calendar
-          </Link>
+          </Link> */}
           <Link to="/about" className="text-sm font-medium hover:text-brand-600 transition-colors">
             About
           </Link>

@@ -9,7 +9,7 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 import { Search, Loader } from "lucide-react";
 import { animalService, Animal } from "@/services/animalService";
 
-const ITEMS_PER_PAGE = 6;
+const ITEMS_PER_PAGE = 8;
 
 const AnimalListing = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -270,7 +270,7 @@ const AnimalListing = () => {
 };
 
 const AnimalGrid = ({ animals, loading }: { animals: Animal[], loading: boolean }) => {
-  debugger;
+  ;
   if (loading) {
     return (
       <div className="text-center py-12">
@@ -289,7 +289,7 @@ const AnimalGrid = ({ animals, loading }: { animals: Animal[], loading: boolean 
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
       {animals.map((animal) => (
         <Card key={animal.id} className="overflow-hidden border-brand-200 hover:shadow-md transition-shadow">
           <div className="aspect-video relative">

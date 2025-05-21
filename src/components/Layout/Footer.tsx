@@ -10,7 +10,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <img src="/lovable-uploads/400574e6-7b15-4fa2-a10f-85b42c0b8051.png" alt="Qurbani Connect Logo" className="h-10 w-auto" />
+              <img src="/lovable-uploads/logo.png" alt="Qurbani Connect Logo" className="h-10 w-auto" />
               <h3 className="font-bold text-lg">Qurbani Connect</h3>
             </div>
             <p className="text-muted-foreground mb-4">

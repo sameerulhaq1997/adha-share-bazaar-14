@@ -52,7 +52,7 @@ const Register = () => {
 
     try {
       const user = await userService.register({
-        name,
+        fullName: name,
         email,
         password,
         phone
@@ -60,7 +60,7 @@ const Register = () => {
 
       toast({
         title: "Registration successful!",
-        description: `Welcome to Qurbani Connect, ${user.name}!`,
+        description: `Welcome to Qurbani Connect, ${user.fullName}!`,
       });
       
       navigate("/dashboard");

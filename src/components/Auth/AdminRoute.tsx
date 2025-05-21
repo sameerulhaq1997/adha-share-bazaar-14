@@ -15,17 +15,17 @@ const AdminRoute = ({ children }: AdminRouteProps) => {
   useEffect(() => {
     const checkAdminStatus = async () => {
       try {
-        const currentUser = await userService.getCurrentUser();
+        const isAdmin = localStorage.getItem("role") == "Admin";
         
         // For demo purposes, check if user is logged in
         // In a real app, you'd check a specific admin field on the user object
-        if (currentUser) {
+        if (isAdmin) {
           // Mock check: assuming user with id "1" is an admin
-          setIsAdmin(currentUser.id === "1");
+          setIsAdmin(isAdmin);
         }
         
         // If not admin, show a toast
-        if (currentUser && currentUser.id !== "1") {
+        if (!isAdmin) {
           toast.error("You don't have permission to access this page");
         }
       } catch (error) {

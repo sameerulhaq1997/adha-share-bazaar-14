@@ -4,10 +4,15 @@ import { ApiService } from '@/lib/axios';
 // User related interfaces
 export interface User {
   id: string;
-  name: string;
+  fullName: string;
   email: string;
   phone?: string;
   bookedShares?: UserBooking[];
+  token?: string;
+  role?: string;
+  status?: string;
+  bookingDate?: string;
+  shares?: string;
 }
 
 export interface UserBooking {
@@ -25,7 +30,7 @@ export interface LoginCredentials {
 }
 
 export interface RegisterData {
-  name: string;
+  fullName: string;
   email: string;
   password: string;
   phone?: string;
@@ -35,7 +40,7 @@ export interface RegisterData {
 const mockUsers: User[] = [
   {
     id: '1',
-    name: 'John Doe',
+    fullName: 'John Doe',
     email: 'john@example.com',
     phone: '123-456-7890',
     bookedShares: [
@@ -59,7 +64,7 @@ const mockUsers: User[] = [
   },
   {
     id: '2',
-    name: 'Jane Smith',
+    fullName: 'Jane Smith',
     email: 'jane@example.com',
     phone: '987-654-3210',
     bookedShares: [
@@ -75,7 +80,7 @@ const mockUsers: User[] = [
   },
   {
     id: '3',
-    name: 'Ahmed Khan',
+    fullName: 'Ahmed Khan',
     email: 'ahmed@example.com',
     bookedShares: [
       {
@@ -107,76 +112,58 @@ class UserService extends ApiService {
     }
     return UserService.instance;
   }
+  setUserDataLocally(user: User): void{
+      localStorage.setItem('authToken', user.token);
+      localStorage.setItem('userName', user.fullName);
+      localStorage.setItem('userEmail', user.email);
+      localStorage.setItem('userId', user.id);
+      localStorage.setItem('userPhone', user.phone);
+      localStorage.setItem('isAdmin', (user.role ?? "") == "Admin" ? 'true' : 'false');
+  }
+
+ getUserDataLocally(): User {
+  const user: User = {
+    token: localStorage.getItem('authToken') || '',
+    fullName: localStorage.getItem('userName') || '',
+    email: localStorage.getItem('userEmail') || '',
+    id: localStorage.getItem('userId') || '',
+    phone: localStorage.getItem('userPhone') || ''
+  };
+
+  return user;
+}
+
 
   // Login user
   async login(credentials: LoginCredentials): Promise<User> {
     try {
-      const response = await this.post<{ user: User; token: string }>('/login', credentials);
-      const { user, token } = response.data;
-      
-      // Store token in localStorage
-      localStorage.setItem('authToken', token);
-      localStorage.setItem('userName', user.name);
-      localStorage.setItem('userEmail', user.email);
-      localStorage.setItem('userId', user.id);
-      localStorage.setItem('isAdmin', user.email.includes('admin') ? 'true' : 'false');
+      ;
+      const response = await this.post<{  value: User; }>('/login', credentials);
+      let user = response.data.value;
+      this.setUserDataLocally(user);
       
       this.isAuthenticated = true;
       this.currentUser = user;
       
       return user;
     } catch (error) {
-      console.error('Login error:', error);
-      // Use mock data for demonstration
-      const mockUser = mockUsers.find(user => user.email === credentials.email) || mockUsers[0];
-      this.isAuthenticated = true;
-      this.currentUser = mockUser;
-      localStorage.setItem('authToken', 'mock-token-12345');
-      localStorage.setItem('userName', mockUser.name);
-      localStorage.setItem('userEmail', mockUser.email);
-      localStorage.setItem('userId', mockUser.id);
-      localStorage.setItem('isAdmin', mockUser.email.includes('admin') ? 'true' : 'false');
-      return mockUser;
     }
   }
 
   // Register user
   async register(data: RegisterData): Promise<User> {
     try {
-      const response = await this.post<{ user: User; token: string }>('/register', data);
-      const { user, token } = response.data;
-      
-      // Store token in localStorage
-      localStorage.setItem('authToken', token);
-      localStorage.setItem('userName', user.name);
-      localStorage.setItem('userEmail', user.email);
-      localStorage.setItem('userId', user.id);
-      localStorage.setItem('isAdmin', user.email.includes('admin') ? 'true' : 'false');
+      ;
+      const response = await this.post<{  value: User; }>('/register', data);
+      let user = response.data.value;
+      this.setUserDataLocally(user);
+
       
       this.isAuthenticated = true;
       this.currentUser = user;
       
       return user;
     } catch (error) {
-      console.error('Registration error:', error);
-      // Use mock data for demonstration
-      const newUser: User = { 
-        id: (mockUsers.length + 1).toString(),
-        name: data.name, 
-        email: data.email,
-        phone: data.phone,
-        bookedShares: []
-      };
-      mockUsers.push(newUser);
-      
-      this.isAuthenticated = true;
-      this.currentUser = newUser;
-      localStorage.setItem('authToken', 'mock-token-12345');
-      localStorage.setItem('userName', newUser.name);
-      localStorage.setItem('userEmail', newUser.email);
-      localStorage.setItem('userId', newUser.id);
-      localStorage.setItem('isAdmin', newUser.email.includes('admin') ? 'true' : 'false');
-      return newUser;
     }
   }
 
@@ -206,59 +193,21 @@ class UserService extends ApiService {
 
   // Get current user
   async getCurrentUser(): Promise<User | null> {
+    ;
     if (!this.checkAuth()) {
       return null;
     }
-
-    if (this.currentUser) {
-      return this.currentUser;
-    }
-
-    try {
-            this.currentUser = mockUser;
-
-      // const response = await this.get<User>('/me');
-      // this.currentUser = response.data;
-      // return this.currentUser;
-    } catch (error) {
-      console.error('Error fetching current user:', error);
-      // Create user from localStorage
-      const id = localStorage.getItem('userId') || '1';
-      const name = localStorage.getItem('userName') || 'John Doe';
-      const email = localStorage.getItem('userEmail') || 'john@example.com';
-      const user = mockUsers.find(user => user.id === id) || {
-        id,
-        name,
-        email,
-        bookedShares: []
-      };
-      this.currentUser = user;
-      return user;
+    else{
+      return this.getUserDataLocally()
     }
   }
 
-  // Get user bookings
-  async getUserBookings(): Promise<UserBooking[]> {
-    if (!this.checkAuth()) {
-      return [];
-    }
-
-    try {
-      const response = await this.get<UserBooking[]>('/bookings');
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching user bookings:', error);
-      const userId = localStorage.getItem('userId') || '1';
-      const user = mockUsers.find(user => user.id === userId);
-      return user?.bookedShares || [];
-    }
-  }
   
   // Get users who booked an animal
   async getUsersByAnimalId(animalId: string): Promise<User[]> {
     try {
-      const response = await this.get<User[]>(`/bookings/animal/${animalId}/users`);
-      return response.data;
+      const response = await this.get<{value: User[];}>(`/user-bookings?animalId=${animalId}`);
+      return response.data.value;
     } catch (error) {
       console.error(`Error fetching users for animal ${animalId}:`, error);
       // Filter mock users who have booked the animal

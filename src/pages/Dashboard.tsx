@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { userService, User, UserBooking } from "@/services/userService";
+import { bookingService } from "@/services/bookingService";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -31,11 +32,10 @@ const Dashboard = () => {
         }
         
         const userData = await userService.getCurrentUser();
+        debugger;
         if (userData) {
           setUser(userData);
-          
-          // Fetch user bookings
-          const bookingsData = await userService.getUserBookings();
+          const bookingsData = await bookingService.getUserBookings();
           setBookings(bookingsData);
         }
       } catch (error) {
@@ -49,7 +49,8 @@ const Dashboard = () => {
         setLoading(false);
       }
     };
-    
+              ;
+
     fetchUserData();
   }, [navigate]);
   
@@ -75,7 +76,7 @@ const Dashboard = () => {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-bold">My Dashboard</h1>
-          <p className="text-muted-foreground mt-1">Welcome back, {user?.name}</p>
+          <p className="text-muted-foreground mt-1">Welcome back, {user?.fullName}</p>
         </div>
         <Button onClick={handleLogout} variant="outline">
           Logout
@@ -92,7 +93,7 @@ const Dashboard = () => {
             <div className="space-y-3">
               <div>
                 <span className="text-sm text-muted-foreground block">Name</span>
-                <span className="font-medium">{user?.name}</span>
+                <span className="font-medium">{user?.fullName}</span>
               </div>
               <div>
                 <span className="text-sm text-muted-foreground block">Email</span>

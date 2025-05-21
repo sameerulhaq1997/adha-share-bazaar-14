@@ -483,33 +483,32 @@ const AnimalDetail = () => {
                 </TableHeader>
                 <TableBody>
                   {users.map((user) => (
-                    user.bookedShares?.filter(booking => booking.animalId === id).map(booking => (
-                      <TableRow key={booking.id}>
+                      <TableRow key={user.id}>
                         <TableCell>
                           <div className="flex items-center space-x-2">
                             <Avatar className="h-8 w-8">
-                              <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                              <AvatarFallback>{user.fullName.charAt(0)}</AvatarFallback>
                             </Avatar>
                             <div>
-                              <p className="font-medium">{user.name}</p>
-                              <p className="text-xs text-muted-foreground">{user.email}</p>
+                              <p className="font-medium">{user.fullName}</p>
+                              {/* <p className="text-xs text-muted-foreground">{user.email}</p> */}
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell>{booking.shares}</TableCell>
-                        <TableCell>{new Date(booking.bookingDate).toLocaleDateString()}</TableCell>
+                        <TableCell>{user.shares}</TableCell>
+                        <TableCell>{new Date(user.bookingDate).toLocaleDateString()}</TableCell>
                         <TableCell>
                           <span className={`px-2 py-1 text-xs rounded-full ${
-                            booking.status === 'confirmed' ? 'bg-green-100 text-green-800' : 
-                            booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                            user.status === 'confirmed' ? 'bg-green-100 text-green-800' : 
+                            user.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
                             'bg-blue-100 text-blue-800'
                           }`}>
-                            {capitalize(booking.status)}
+                            {capitalize(user.status)}
                           </span>
                         </TableCell>
                       </TableRow>
                     ))
-                  ))}
+                  }
                 </TableBody>
               </Table>
             ) : (
