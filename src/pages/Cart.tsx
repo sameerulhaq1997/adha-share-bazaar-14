@@ -7,11 +7,14 @@ import { Input } from "@/components/ui/input";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "@/hooks/use-toast";
 import { Check, ShoppingCart } from "lucide-react";
+import { configService } from "@/services/configService";
 
 const Cart = () => {
   const navigate = useNavigate();
   const { items, updateShareCount, removeFromCart, getTotalPrice, clearCart } = useCart();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [showImages, setShowImages] = useState(configService.getShowProductImages());
+
 
   const handleCheckout = () => {
     setIsCheckingOut(true);
@@ -55,13 +58,13 @@ const Cart = () => {
             {items.map((item) => (
               <Card key={item.id} className="overflow-hidden border-brand-200">
                 <div className="flex flex-col sm:flex-row">
-                  <div className="w-full sm:w-1/3">
+                  {showImages && <div className="w-full sm:w-1/3">
                     <img
                       src={item.imageUrl}
                       alt={item.name}
                       className="h-full w-full object-cover aspect-video sm:aspect-square"
                     />
-                  </div>
+                  </div>}
                   <div className="w-full sm:w-2/3 p-6">
                     <div className="flex justify-between items-start mb-2">
                       <div>
