@@ -1,172 +1,147 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
+ 
 @layer base {
   :root {
-    --background: 120 40% 98%;
-    --foreground: 120 10% 10%;
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
 
     --card: 0 0% 100%;
-    --card-foreground: 120 10% 10%;
-
+    --card-foreground: 222.2 84% 4.9%;
+ 
     --popover: 0 0% 100%;
-    --popover-foreground: 120 10% 10%;
-
-    --primary: 110 50% 48%;
-    --primary-foreground: 120 10% 98%;
-
-    --secondary: 60 33% 90%;
-    --secondary-foreground: 24 9% 20%;
-
-    --muted: 60 20% 92%;
-    --muted-foreground: 24 8% 40%;
-
-    --accent: 142 72% 29%;
-    --accent-foreground: 120 10% 98%;
-
+    --popover-foreground: 222.2 84% 4.9%;
+ 
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+ 
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+ 
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+ 
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+ 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 120 10% 98%;
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 120 20% 82%;
-    --input: 120 20% 82%;
-    --ring: 110 50% 48%;
-
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+ 
     --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 120 20% 10%;
-    --foreground: 60 10% 98%;
-
-    --card: 120 15% 12%;
-    --card-foreground: 60 10% 98%;
-
-    --popover: 120 45% 15%;
-    --popover-foreground: 60 10% 98%;
-
-    --primary: 110 50% 48%;
-    --primary-foreground: 120 10% 98%;
-
-    --secondary: 120 15% 25%;
-    --secondary-foreground: 60 10% 98%;
-
-    --muted: 120 15% 25%;
-    --muted-foreground: 24 8% 70%;
-
-    --accent: 142 50% 25%;
-    --accent-foreground: 60 10% 98%;
-
-    --destructive: 0 62.8% 40.6%;
-    --destructive-foreground: 60 10% 98%;
-
-    --border: 120 15% 25%;
-    --input: 120 15% 25%;
-    --ring: 110 50% 48%;
     
-    --sidebar-background: 120 15% 12%;
-    --sidebar-foreground: 60 10% 98%;
-    --sidebar-primary: 110 50% 48%;
-    --sidebar-primary-foreground: 120 10% 98%;
-    --sidebar-accent: 120 15% 25%;
-    --sidebar-accent-foreground: 60 10% 98%;
-    --sidebar-border: 120 15% 25%;
-    --sidebar-ring: 110 50% 48%;
+    /* Brand colors */
+    --brand-50: 120 100% 97%;
+    --brand-100: 120 96% 91%;
+    --brand-200: 122 82% 79%;
+    --brand-300: 125 60% 59%;
+    --brand-400: 126 50% 44%;
+    --brand-500: 126 100% 27%;
+    --brand-600: 126 100% 24%;
+    --brand-700: 126 94% 19%;
+    --brand-800: 125 92% 16%;
+    --brand-900: 126 98% 13%;
+    --brand-950: 128 100% 7%;
+  }
+ 
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+ 
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+ 
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+ 
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+ 
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+ 
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+ 
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+ 
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+ 
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
   }
 }
-
+ 
 @layer base {
   * {
     @apply border-border;
   }
-
   body {
     @apply bg-background text-foreground;
   }
 }
 
-.animal-card-image {
-  height: 200px;
-  object-fit: cover;
-}
-
+/* Custom styles */
 .progress-bar {
   height: 8px;
   border-radius: 4px;
   overflow: hidden;
 }
 
-.islamic-pattern {
-  background-color: #f8f9fa;
-  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2373b83e' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+/* Compact card styles when images are hidden */
+.compact-card {
+  max-height: 250px;
 }
 
-/* Animation utilities */
-@keyframes float {
-  0% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-  100% {
-    transform: translateY(0px);
-  }
+/* Admin calendar styles */
+.calendar-day {
+  min-height: 80vh;
+  background: repeating-linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.03) 0px,
+    rgba(0, 0, 0, 0.03) 1px,
+    transparent 1px,
+    transparent 30px
+  );
 }
 
-.animate-float {
-  animation: float 3s ease-in-out infinite;
+.time-slot {
+  height: 30px;
+  border-bottom: 1px dashed rgba(0, 0, 0, 0.1);
 }
 
-@keyframes pulse-subtle {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.8;
-  }
+.calendar-event {
+  background-color: #e1f5fe;
+  border-left: 3px solid #039be5;
+  border-radius: 3px;
+  padding: 4px 8px;
+  font-size: 0.9rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  position: absolute;
+  width: calc(100% - 16px);
+  overflow: hidden;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
 
-.animate-pulse-subtle {
-  animation: pulse-subtle 2s ease-in-out infinite;
+.calendar-event:hover {
+  background-color: #b3e5fc;
 }
 
-/* Page transitions */
-.page-transition-enter {
-  opacity: 0;
-  transform: translateY(10px);
+.calendar-event.slaughter {
+  background-color: #ffecb3;
+  border-left-color: #ffa000;
 }
 
-.page-transition-enter-active {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 300ms, transform 300ms;
-}
-
-.page-transition-exit {
-  opacity: 1;
-}
-
-.page-transition-exit-active {
-  opacity: 0;
-  transition: opacity 300ms;
-}
-
-/* Hover animations */
-.hover-card {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.hover-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+.calendar-event.collection {
+  background-color: #c8e6c9;
+  border-left-color: #43a047;
 }

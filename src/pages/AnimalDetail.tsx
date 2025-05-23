@@ -1,249 +1,76 @@
 
 import { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Info, Check, ShoppingCart, AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
-import { useCart } from "@/contexts/CartContext";
-import { toast } from "@/hooks/use-toast";
+import { useParams, Link } from "react-router-dom";
 import { animalService, Animal } from "@/services/animalService";
-import { userService, User } from "@/services/userService";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { configService } from "@/services/configService";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
 
 const AnimalDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const { addToCart, items } = useCart();
-  const navigate = useNavigate();
-  const [selectedImage, setSelectedImage] = useState(0);
-  const [shareCount, setShareCount] = useState(1);
-  const [paymentMethod, setPaymentMethod] = useState("online");
-  const [addingToCart, setAddingToCart] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [animal, setAnimal] = useState<Animal | null>(null);
-  const [users, setUsers] = useState<User[]>([]);
-  const [loadingUsers, setLoadingUsers] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  
-  // Check if user is authenticated
-  useEffect(() => {
-    const checkAuth = async () => {
-      const auth = userService.checkAuth();
-      setIsAuthenticated(auth);
-    };
-    
-    checkAuth();
-  }, []);
-  
-  // Fetch the animal details based on ID
+  const [isLoading, setIsLoading] = useState(true);
+  const [showImages, setShowImages] = useState(configService.getShowProductImages());
+
   useEffect(() => {
     const fetchAnimal = async () => {
-      if (!id) return;
-      
-      setLoading(true);
+      setIsLoading(true);
       try {
-        const data = await animalService.getAnimalById(id);
-        if (data) {
-          setAnimal(data);
-          console.log("Animal data received:", data);
-        } else {
-          console.error("No animal data returned for ID:", id);
-        }
+        const animalData = await animalService.getAnimalById(id);
+        setAnimal(animalData);
       } catch (error) {
-        console.error("Failed to fetch animal details:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load animal details. Using cached data if available.",
-          variant: "destructive",
-        });
+        console.error("Failed to fetch animal:", error);
+        setAnimal(null);
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
-    
+
     fetchAnimal();
   }, [id]);
   
-  // Fetch users who booked this animal
+  // Listen for image display setting changes
   useEffect(() => {
-    const fetchUsers = async () => {
-      if (!id) return;
-      
-      setLoadingUsers(true);
-      try {
-        const data = await userService.getUsersByAnimalId(id);
-        setUsers(data);
-        console.log("Users who booked this animal:", data);
-      } catch (error) {
-        console.error("Failed to fetch users:", error);
-      } finally {
-        setLoadingUsers(false);
-      }
+    const handleConfigChange = (event: CustomEvent) => {
+      setShowImages(event.detail.showProductImages);
     };
+
+    window.addEventListener(
+      'product-images-setting-changed', 
+      handleConfigChange as EventListener
+    );
     
-    fetchUsers();
-  }, [id]);
-  
-  // Handle image navigation
-  const nextImage = () => {
-    if (!animal?.additionalImages) return;
-    setSelectedImage(prev => (prev + 1) % animal.additionalImages.length);
-  };
-  
-  const prevImage = () => {
-    if (!animal?.additionalImages) return;
-    setSelectedImage(prev => (prev - 1 + animal.additionalImages.length) % animal.additionalImages.length);
-  };
-  
-  if (loading) {
+    return () => {
+      window.removeEventListener(
+        'product-images-setting-changed',
+        handleConfigChange as EventListener
+      );
+    };
+  }, []);
+
+  if (isLoading) {
     return (
-      <div className="container px-4 sm:px-8 py-32 text-center">
-        <h2 className="text-2xl font-semibold mb-4">Loading Animal Details...</h2>
+      <div className="container px-4 py-8">
+        <div className="text-center py-12">
+          <h3 className="text-xl font-medium">Loading animal details...</h3>
+        </div>
       </div>
     );
   }
-  
-  if (!animal) {
-    return (
-      <div className="container px-4 sm:px-8 py-32 text-center">
-        <h2 className="text-2xl font-semibold mb-4">Animal Not Found</h2>
-        <p className="mb-8">The animal you're looking for doesn't exist or has been removed.</p>
-        <Button asChild>
-          <Link to="/animals">Browse Available Animals</Link>
-        </Button>
-      </div>
-    );
-  }
-  
-  const totalPrice = shareCount * (animal.pricePerShare || 0);
-  
-  const handleShareCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value);
-    if (value >= 1 && value <= animal.remainingShares) {
-      setShareCount(value);
-    }
-  };
-
-  const handleAddToCart = () => {
-    if (!isAuthenticated) {
-      toast({
-        title: "Authentication required",
-        description: "Please login or register to book shares.",
-        variant: "destructive",
-      });
-      navigate("/login");
-      return;
-    }
-    
-    setAddingToCart(true);
-    
-    // Add item to cart
-    addToCart({
-      animalId: animal.id,
-      name: animal.name,
-      category: animal.category,
-      imageUrl: animal.imageUrl,
-      sharePrice: animal.pricePerShare || 0,
-      shares: shareCount,
-      totalPrice: totalPrice
-    });
-    
-    // Show success toast
-    toast({
-      title: "Added to cart",
-      description: `${shareCount} ${shareCount > 1 ? 'shares' : 'share'} of ${animal.name} added to your cart.`,
-    });
-    
-    setAddingToCart(false);
-  };
-
-  // Check how many shares of this animal are already in the cart
-  const sharesInCart = items
-    .filter(item => item.animalId === animal.id)
-    .reduce((total, item) => total + item.shares, 0);
-  
-  const availableShares = animal.remainingShares - sharesInCart;
-
-  // Helper function to safely capitalize a string
-  const capitalize = (str: string | undefined) => {
-    if (!str) return '';
-    return str.charAt(0).toUpperCase() + str.slice(1);
-  };
-
-  // Helper function to safely format numbers with toLocaleString
-  const formatNumber = (num: number | undefined) => {
-    if (num === undefined || num === null) return '0';
-    return num.toLocaleString();
-  };
-
-  // Get all images (main + additional)
-  const allImages = animal.additionalImages ? 
-    [animal.imageUrl, ...animal.additionalImages] : 
-    [animal.imageUrl];
-  
-  // Get current image to display
-  const currentImage = allImages[selectedImage];
 
   return (
-    <div className="container px-4 sm:px-8 py-8">
-      <div className="flex flex-col md:flex-row gap-8">
-        {/* Left Column - Images */}
-        <div className="w-full md:w-1/2">
-          <div className="rounded-lg overflow-hidden mb-4 border relative">
-            <img
-              src={currentImage}
-              alt={animal.name}
-              className="w-full h-auto object-cover aspect-video"
-            />
-            
-            {allImages.length > 1 && (
-              <>
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white rounded-full"
-                  onClick={prevImage}
-                >
-                  <ChevronLeft className="h-5 w-5" />
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white rounded-full"
-                  onClick={nextImage}
-                >
-                  <ChevronRight className="h-5 w-5" />
-                </Button>
-                <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-black/30 px-2 py-1 rounded text-white text-xs">
-                  {selectedImage + 1} / {allImages.length}
-                </div>
-              </>
-            )}
-          </div>
-          
-          {allImages.length > 1 && (
-            <div className="flex space-x-2 overflow-x-auto pb-2">
-              {allImages.map((image, index) => (
-                <div
-                  key={index}
-                  className={`border overflow-hidden rounded cursor-pointer w-20 h-20 flex-shrink-0 ${
-                    selectedImage === index ? "ring-2 ring-brand-500" : ""
-                  }`}
-                  onClick={() => setSelectedImage(index)}
-                >
-                  <img
-                    src={image}
-                    alt={`${animal.name} ${index + 1}`}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ))}
-            </div>
-          )}
+    <div className="container px-4 py-8">
+      {isLoading ? (
+        <div className="text-center py-12">
+          <h3 className="text-xl font-medium">Loading animal details...</h3>
         </div>
         
         {/* Right Column - Details */}
@@ -319,66 +146,23 @@ const AnimalDetail = () => {
             </div>
           )}
           
-          <Card className="mb-6">
-            <CardHeader className="pb-3">
-              <CardTitle>Book Your Share</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="shares">Number of Shares</Label>
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => shareCount > 1 && setShareCount(shareCount - 1)}
-                      disabled={shareCount <= 1}
-                    >
-                      -
-                    </Button>
-                    <Input
-                      id="shares"
-                      type="number"
-                      min={1}
-                      max={availableShares}
-                      value={shareCount}
-                      onChange={handleShareCountChange}
-                      className="max-w-16 text-center"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => shareCount < availableShares && setShareCount(shareCount + 1)}
-                      disabled={shareCount >= availableShares}
-                    >
-                      +
-                    </Button>
-                  </div>
+          {/* Details Section */}
+          <div className={`${!showImages ? "md:col-span-2" : ""}`}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-2xl font-bold">{animal.name}</CardTitle>
+                <CardDescription>{animal.description}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Price</span>
+                  <span className="font-semibold">
+                    ₹{animal.price ? animal.price.toLocaleString() : "N/A"}
+                  </span>
                 </div>
-                
-                <div className="space-y-2">
-                  <Label>Payment Method</Label>
-                  <RadioGroup
-                    defaultValue="online"
-                    value={paymentMethod}
-                    onValueChange={setPaymentMethod}
-                    className="flex flex-col space-y-1"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="online" id="online" />
-                      <Label htmlFor="online">Online Payment</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="bank_transfer" id="bank_transfer" />
-                      <Label htmlFor="bank_transfer">Bank Transfer</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="cash" id="cash" />
-                      <Label htmlFor="cash">Cash on Delivery</Label>
-                    </div>
-                  </RadioGroup>
+                <div>
+                  <span className="text-muted-foreground">Category</span>
+                  <p className="font-medium">{animal.category}</p>
                 </div>
                 
                 <div className="pt-4 border-t">
@@ -386,35 +170,19 @@ const AnimalDetail = () => {
                     <span className="font-medium">Total Amount:</span>
                     <span className="text-lg font-bold">PKR {formatNumber(totalPrice)}</span>
                   </div>
-                  
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      onClick={handleAddToCart}
-                      className="flex-1 bg-brand-600 hover:bg-brand-700"
-                      disabled={addingToCart || availableShares === 0}
-                    >
-                      <ShoppingCart className="mr-2 h-4 w-4" />
-                      {addingToCart ? "Adding..." : "Add to Cart"}
-                    </Button>
-                    
-                    <Button asChild className="flex-1 bg-brand-600 hover:bg-brand-700">
-                      <Link to="/cart">
-                        View Cart
-                      </Link>
-                    </Button>
-                  </div>
-                  
-                  <div className="mt-2 flex items-start gap-1 text-xs text-muted-foreground">
-                    <Info className="h-3 w-3 mt-0.5 flex-shrink-0" />
-                    <p>
-                      By proceeding, you agree to our terms and conditions. Bookings are confirmed upon payment.
+                  <div>
+                    <span className="text-muted-foreground">Shares</span>
+                    <p className="font-medium">
+                      {animal.remainingShares}/{animal.totalShares} remaining
                     </p>
                   </div>
                 </div>
-              </form>
-            </CardContent>
-          </Card>
+                <Button asChild className="w-full">
+                  <Link to="/cart">Add to Cart</Link>
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
       

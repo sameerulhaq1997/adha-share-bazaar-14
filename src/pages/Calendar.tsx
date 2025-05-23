@@ -38,10 +38,12 @@ const CalendarView = () => {
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['calendar', calendarType],
     queryFn: () => calendarService.getEventsByType(calendarType),
-    onError: () => {
-      toast.error("Failed to load calendar events", {
-        description: "Using cached data instead.",
-      });
+    meta: {
+      onError: () => {
+        toast.error("Failed to load calendar events", {
+          description: "Using cached data instead.",
+        });
+      }
     }
   });
 

@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { 
   Card, 
   CardContent, 
@@ -15,6 +16,7 @@ import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
 import { bookingService } from "@/services/bookingService";
+import { Plus } from "lucide-react";
 
 const BookingManagement = () => {
   const [page, setPage] = useState(1);
@@ -23,7 +25,7 @@ const BookingManagement = () => {
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["bookings", page, statusFilter],
-    queryFn: () => bookingService.getBookings(page, pageSize, statusFilter),
+    queryFn: () => bookingService.getBookings(page, pageSize, statusFilter)
   });
 
   const updateStatusMutation = useMutation({
@@ -54,8 +56,18 @@ const BookingManagement = () => {
 
   return (
     <div className="container py-8">
-      <h1 className="text-3xl font-bold mb-2">Booking Management</h1>
-      <p className="text-muted-foreground mb-6">View and manage Qurbani bookings</p>
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Booking Management</h1>
+          <p className="text-muted-foreground">View and manage Qurbani bookings</p>
+        </div>
+        <Button asChild>
+          <Link to="/admin/add-booking">
+            <Plus className="mr-2 h-4 w-4" />
+            Add New Booking
+          </Link>
+        </Button>
+      </div>
       
       <Card>
         <CardHeader>

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { Search, Loader } from "lucide-react";
 import { animalService, Animal } from "@/services/animalService";
+import { configService } from "@/services/configService";
+import { ImageToggle } from "@/components/ui/ImageToggle";
 
 const ITEMS_PER_PAGE = 8;
 
@@ -21,6 +24,26 @@ const AnimalListing = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loadMoreLoading, setLoadMoreLoading] = useState(false);
+  const [showImages, setShowImages] = useState(configService.getShowProductImages());
+  
+  // Listen for image display setting changes
+  useEffect(() => {
+    const handleConfigChange = (event: CustomEvent) => {
+      setShowImages(event.detail.showProductImages);
+    };
+
+    window.addEventListener(
+      'product-images-setting-changed', 
+      handleConfigChange as EventListener
+    );
+    
+    return () => {
+      window.removeEventListener(
+        'product-images-setting-changed',
+        handleConfigChange as EventListener
+      );
+    };
+  }, []);
   
   // Fetch animals from API service
   useEffect(() => {
@@ -109,7 +132,10 @@ const AnimalListing = () => {
       
       {/* Filters */}
       <div className="bg-secondary p-6 rounded-lg mb-8">
-        <h2 className="text-xl font-semibold mb-4">Filters</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold">Filters</h2>
+          <ImageToggle />
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="text-sm text-muted-foreground block mb-2">
@@ -192,19 +218,19 @@ const AnimalListing = () => {
         </TabsList>
         
         <TabsContent value="all" className="mt-6">
-          <AnimalGrid animals={getCurrentPageItems()} loading={loading} />
+          <AnimalGrid animals={getCurrentPageItems()} loading={loading} showImages={showImages} />
         </TabsContent>
         <TabsContent value="cow" className="mt-6">
-          <AnimalGrid animals={getCurrentPageItems()} loading={loading} />
+          <AnimalGrid animals={getCurrentPageItems()} loading={loading} showImages={showImages} />
         </TabsContent>
         <TabsContent value="goat" className="mt-6">
-          <AnimalGrid animals={getCurrentPageItems()} loading={loading} />
+          <AnimalGrid animals={getCurrentPageItems()} loading={loading} showImages={showImages} />
         </TabsContent>
         <TabsContent value="sheep" className="mt-6">
-          <AnimalGrid animals={getCurrentPageItems()} loading={loading} />
+          <AnimalGrid animals={getCurrentPageItems()} loading={loading} showImages={showImages} />
         </TabsContent>
         <TabsContent value="camel" className="mt-6">
-          <AnimalGrid animals={getCurrentPageItems()} loading={loading} />
+          <AnimalGrid animals={getCurrentPageItems()} loading={loading} showImages={showImages} />
         </TabsContent>
       </Tabs>
       
@@ -269,8 +295,7 @@ const AnimalListing = () => {
   );
 };
 
-const AnimalGrid = ({ animals, loading }: { animals: Animal[], loading: boolean }) => {
-  ;
+const AnimalGrid = ({ animals, loading, showImages }: { animals: Animal[], loading: boolean, showImages: boolean }) => {
   if (loading) {
     return (
       <div className="text-center py-12">
@@ -291,24 +316,31 @@ const AnimalGrid = ({ animals, loading }: { animals: Animal[], loading: boolean 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
       {animals.map((animal) => (
-        <Card key={animal.id} className="overflow-hidden border-brand-200 hover:shadow-md transition-shadow">
-          <div className="aspect-video relative">
-           <img
-  src={animal.imageUrl && animal.imageUrl !== "" ? animal.imageUrl : "/lovable-uploads/cow.jpeg"}
-  alt={animal.name}
-  className="w-full h-full object-cover"
-/>
-            <div className="absolute top-2 right-2 bg-brand-600 text-white px-2 py-1 rounded text-sm font-medium">
-              {animal.category === "cow" ? "7 Shares" : "Full Animal"}
+        <Card 
+          key={animal.id} 
+          className={`overflow-hidden border-brand-200 hover:shadow-md transition-shadow ${showImages ? "" : "compact-card"}`}
+        >
+          {showImages && (
+            <div className="aspect-video relative">
+              <img
+                src={animal.imageUrl}
+                alt={animal.name}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute top-2 right-2 bg-brand-600 text-white px-2 py-1 rounded text-sm font-medium">
+                {animal.category === "cow" ? "7 Shares" : "Full Animal"}
+              </div>
             </div>
-          </div>
+          )}
           
-          <CardContent className="p-6">
+          <CardContent className={`${showImages ? "p-6" : "p-4"}`}>
             <div className="flex justify-between items-start mb-2">
-              <h3 className="text-xl font-semibold">{animal.name}</h3>
-              <span className="text-brand-700 font-bold">PKR {animal.price ? animal.price.toLocaleString() : '0'}</span>
+              <h3 className={`${showImages ? "text-xl" : "text-lg"} font-semibold`}>{animal.name}</h3>
+              <span className="text-brand-700 font-bold">₹{animal.price ? animal.price.toLocaleString() : '0'}</span>
             </div>
-            <p className="text-sm text-muted-foreground mb-4">{animal.description}</p>
+            {showImages && (
+              <p className="text-sm text-muted-foreground mb-4">{animal.description}</p>
+            )}
             
             <div className="mb-4">
               <div className="flex justify-between text-sm mb-1">
@@ -339,7 +371,7 @@ const AnimalGrid = ({ animals, loading }: { animals: Animal[], loading: boolean 
             </div>
           </CardContent>
           
-          <CardFooter className="p-6 pt-0">
+          <CardFooter className={`${showImages ? "p-6 pt-0" : "p-4 pt-0"}`}>
             <Button asChild className="w-full bg-brand-600 hover:bg-brand-700">
               <Link to={`/animal/${animal.id}`}>View Details</Link>
             </Button>
